@@ -102,7 +102,7 @@ def beam_search(graph: nx.DiGraph, width: int, ngram_stat: NGramStat) -> List[Be
                     hyphotesis[current_path + (neigh_node,)] = log_likelihood
 
             if not has_neigh:
-                sorted_hyp = sorted(hyphotesis.items(), key=lambda x: x[1])
+                sorted_hyp = sorted(hyphotesis.items(), key=lambda x: x[1], reverse=True)
                 result = []
                 for text, log_likelihood in sorted_hyp:
                     union_text = map(lambda x: x[1], text)
