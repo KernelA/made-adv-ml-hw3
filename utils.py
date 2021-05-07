@@ -18,7 +18,7 @@ def read_text(path_to_zip, ignore_files: List[str] = None) -> dict:
             if not item.is_dir() and item.filename not in ignore_files:
                 with zip.open(item, "r") as file:
                     text = file.read().decode("utf-8")
-                    texts[item.filename] = preprocess_text(text)
+                    texts[item.filename] = text
     return texts
 
 

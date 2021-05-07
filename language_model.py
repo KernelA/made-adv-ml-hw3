@@ -30,11 +30,16 @@ class NGramStat:
         self._ngram_ranks = {rank: gram for rank, (gram, _) in enumerate(sorted(
             self._ngram_proba.items(), reverse=True, key=lambda x: x[1]))}
 
+        self._ngram_counts = counter.copy()
+
     def get_ngram_by_rank(self, rank: int):
         return self._ngram_ranks[rank]
 
     def get_ngram_proba(self, ngram: str):
         return self._ngram_proba.get(ngram, 0)
+
+    def get_ngram_count(self, ngram: str) -> int:
+        return self._ngram_counts.get(ngram, 1)
 
     def get_ngram_log_proba(self, ngram: str):
         if ngram in self._ngram_proba:

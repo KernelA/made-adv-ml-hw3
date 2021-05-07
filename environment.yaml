@@ -9,6 +9,7 @@ dependencies:
   - networxk=2.5
   - matplotlib=3
   - tqdm=4.59
+  - ipywidgets>=7.5
   - pip:
       - emojis~=0.6
       - decorator>=5.0.7
