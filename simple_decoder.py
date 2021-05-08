@@ -3,10 +3,10 @@ import math
 from collections import namedtuple
 
 import networkx as nx
-import tqdm
+from tqdm import notebook
 
 from language_model import NGramStat, count_ngram
-from utils import get_emoji_vocab, preprocess_text
+from utils import get_emoji_vocab, preprocess_text, LetterPermutation
 
 BeamSearchHyphotesis = namedtuple("BeamSearchHyphotesis", ["phrase", "log_likelihood"])
 
@@ -63,13 +63,12 @@ def beam_search(graph: nx.DiGraph, width: int, ngram_stat: NGramStat) -> List[Be
     for node in graph.nodes:
         if not tuple(graph.predecessors(node)):
             start_node = node
-            print("Start form:", start_node)
             break
 
     for node in nx.dfs_preorder_nodes(graph, start_node):
         end_index = node[0]
 
-    progress = tqdm.tqdm(total=end_index, desc="Beam search", leave=True)
+    progress = notebook.tqdm(total=end_index, desc="Beam search", leave=True)
 
     hyphotesis = []
     nodes = set([(start_node,)])
@@ -83,7 +82,7 @@ def beam_search(graph: nx.DiGraph, width: int, ngram_stat: NGramStat) -> List[Be
 
             if not update:
                 progress.update(n=1)
-                update = False
+                update = True
 
             has_neigh = False
 
@@ -108,6 +107,7 @@ def beam_search(graph: nx.DiGraph, width: int, ngram_stat: NGramStat) -> List[Be
                     union_text = map(lambda x: x[1], text)
                     union_text = "".join(union_text)
                     result.append(BeamSearchHyphotesis(union_text, log_likelihood))
+                progress.close()
                 return result
 
             hyphotesis.pop(current_path)
@@ -129,14 +129,12 @@ def decode_text(encoded_text: str, source_freq: NGramStat, n_gram: int, beam_sea
     return beam_search(parse_graph, width=beam_search_width, ngram_stat=source_freq)
 
 
-def encode_text(text: str, vocab, n_gram: int):
-    target_alphabet = get_emoji_vocab()
-    assert len(target_alphabet) >= len(vocab)
-    vocab = {source_char: target_char for source_char, target_char in zip(vocab, target_alphabet)}
+def encode_text(text: str, permutation: LetterPermutation, n_gram: int):
+    encode_mapping = permutation.get_encode_mapping()
     print("Encoded text length:", len(preprocess_text(text)))
     processed_text = preprocess_text(text)
-    encoded_text = "".join(map(lambda x: vocab[x], processed_text))
+    encoded_text = "".join(map(lambda x: encode_mapping[x], processed_text))
     reminder = len(encoded_text) % n_gram
     if reminder != 0:
-        encoded_text += "".join([vocab[" "]] * reminder)
+        encoded_text += "".join([encode_mapping[" "]] * reminder)
     return encoded_text, processed_text

@@ -1,0 +1,10 @@
+autopep8
+pylint
+ipykernel~=5.5
+networxk==2.5
+matplotlib~=3.1
+tqdm~=4.59
+ipywidgets>=7.5
+emojis~=0.6
+decorator>=5.0.7
+tabulate~=0.8

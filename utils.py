@@ -1,14 +1,51 @@
+import enum
+import re
 import zipfile
 from unicodedata import normalize
-from typing import List
+from typing import Iterable, List, Sequence
 import string
+import random
 
 import emojis
+from networkx.classes.function import non_edges
 
-RUSSIAN_LETTERS = frozenset("абвгдеёжзийклмнопрстуфхцчшщъыьэюя")
+from constants import RUSSIAN_LETTERS
 
 
-def read_text(path_to_zip, ignore_files: List[str] = None) -> dict:
+class LetterPermutation:
+    def __init__(self, src_vocab: set, chiper_vocab: set, seed: int = 32):
+        self._src_vocab = sorted(src_vocab)
+        self._chiper_vocab = sorted(chiper_vocab)
+        self._generator = random.Random(seed)
+        assert len(self._src_vocab) == len(
+            self._chiper_vocab), f"Number of letters muts be same. But {len(self._src_vocab)} != {len(self._chiper_vocab)}"
+
+    def get_decode_mapping(self, permutations: Sequence[int] = None) -> dict:
+        if permutations is None:
+            return {chiper_letter: src_letter for chiper_letter, src_letter in zip(self._chiper_vocab, self._src_vocab)}
+        else:
+            assert len(set(permutations)) == len(self._chiper_vocab)
+            return {self._chiper_vocab[permutations[i]]: src_letter for i, src_letter in enumerate(self._src_vocab)}
+
+    def get_encode_mapping(self, permutations: Sequence[int] = None) -> dict:
+        return {src_letter: chiper_letter for chiper_letter, src_letter in self.get_decode_mapping(permutations).items()}
+
+    def permute(self, permutations: Iterable[int]):
+        assert len(set(permutations)) == len(
+            self._chiper_vocab), "Permutation is not a valid by length"
+        self._chiper_vocab = [self._chiper_vocab[permutations[i]] for i in range(len(permutations))]
+
+    def __len__(self) -> int:
+        return len(self._src_vocab)
+
+    def src_vocab(self) -> List[str]:
+        return self._src_vocab.copy()
+
+    def chiper_vocab(self) -> List[str]:
+        return self._chiper_vocab.copy()
+
+
+def read_text(path_to_zip, ignore_files: List[str] = None, encoding: str = "utf-8") -> dict:
     texts = dict()
     if ignore_files is None:
         ignore_files = []
@@ -17,7 +54,7 @@ def read_text(path_to_zip, ignore_files: List[str] = None) -> dict:
         for item in zip.infolist():
             if not item.is_dir() and item.filename not in ignore_files:
                 with zip.open(item, "r") as file:
-                    text = file.read().decode("utf-8")
+                    text = file.read().decode(encoding)
                     texts[item.filename] = text
     return texts
 
