@@ -9,7 +9,8 @@
 1. Python 3.8 или выше
 2. Настроенная Anaconda (опционально)
 3. Установленный [Jupyter Lab или Notebook](https://jupyter.org/)
-4. Git LFS (исходные данных хранятся в LFS)
+4. [Настроенный Plotly для Jupyter Lab](https://plotly.com/python/getting-started/)
+5. Git LFS (исходные данных хранятся в LFS)
 
 ## Как запустить
 

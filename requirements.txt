@@ -9,3 +9,5 @@ emojis~=0.6
 decorator>=5.0.7
 tabulate~=0.8
 jupyterlab~=2.3
+pandas~=1.2
+plotly==4.14.3

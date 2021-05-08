@@ -131,7 +131,6 @@ def decode_text(encoded_text: str, source_freq: NGramStat, n_gram: int, beam_sea
 
 def encode_text(text: str, permutation: LetterPermutation, n_gram: int):
     encode_mapping = permutation.get_encode_mapping()
-    print("Encoded text length:", len(preprocess_text(text)))
     processed_text = preprocess_text(text)
     encoded_text = "".join(map(lambda x: encode_mapping[x], processed_text))
     reminder = len(encoded_text) % n_gram

@@ -28,7 +28,8 @@ def log_score_function(encoded_text: str, ngram_stat: NGramStat, mapping: dict):
 def mcmc_decryption(encoded_text: str, src_ngram_stat: NGramStat, src_vocab: list,
                     chiper_vocab: list,
                     num_iters: int, scaling: float = 1,
-                    generator: random.Random = None) -> MCMCDecoding:
+                    generator: random.Random = None,
+                    show_progress: bool = True) -> MCMCDecoding:
 
     if generator is None:
         internal_generator = random.Random(22)
@@ -46,13 +47,17 @@ def mcmc_decryption(encoded_text: str, src_ngram_stat: NGramStat, src_vocab: lis
 
     log_prev_score = log_score_function(encoded_text, src_ngram_stat, new_decode_mapping)
 
-    progress = notebook.trange(num_iters, leave=True)
+    if show_progress:
+        progress = notebook.trange(num_iters, leave=True)
+    else:
+        progress = range(num_iters)
 
     best_log_score = log_prev_score
     best_perm = prev_permutations.copy()
 
     for iter in progress:
-        progress.set_postfix_str(f"Log score: {log_prev_score:.2}")
+        if show_progress:
+            progress.set_postfix_str(f"Log score: {float(log_prev_score):.2}")
         index1 = internal_generator.randint(0, len(prev_permutations) - 1)
         index2 = internal_generator.randint(0, len(prev_permutations) - 1)
         np.copyto(proposal_permutations, prev_permutations)
