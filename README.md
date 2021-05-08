@@ -2,7 +2,7 @@
 
 [Описание задания](https://docs.google.com/document/d/1FWCuz-3Q_85yQYEwz6xVkIuXUjQn60dVFxreJId-liM/edit)
 
-[![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/KernelA/made-adv-ml-hw2/blob/master/solution.ipynb)
+[![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/KernelA/made-adv-ml-hw3/blob/master/decrypt.ipynb)
 
 ## Требования для запуска
 
