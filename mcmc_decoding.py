@@ -25,8 +25,10 @@ def log_score_function(encoded_text: str, ngram_stat: NGramStat, mapping: dict):
     return log_score
 
 
-def mcmc_decryption(encoded_text: str, src_ngram_stat: NGramStat, src_vocab: list, chiper_vocab: list,
-                    num_iters: int, scaling: float = 1, generator: random.Random = None) -> MCMCDecoding:
+def mcmc_decryption(encoded_text: str, src_ngram_stat: NGramStat, src_vocab: list,
+                    chiper_vocab: list,
+                    num_iters: int, scaling: float = 1,
+                    generator: random.Random = None) -> MCMCDecoding:
 
     if generator is None:
         internal_generator = random.Random(22)
@@ -46,6 +48,9 @@ def mcmc_decryption(encoded_text: str, src_ngram_stat: NGramStat, src_vocab: lis
 
     progress = notebook.trange(num_iters, leave=True)
 
+    best_log_score = log_prev_score
+    best_perm = prev_permutations.copy()
+
     for iter in progress:
         progress.set_postfix_str(f"Log score: {log_prev_score:.2}")
         index1 = internal_generator.randint(0, len(prev_permutations) - 1)
@@ -64,10 +69,14 @@ def mcmc_decryption(encoded_text: str, src_ngram_stat: NGramStat, src_vocab: lis
             log_prev_score = log_score_proposal
             np.copyto(prev_permutations, proposal_permutations)
 
-    init_symmetric_key.permute(prev_permutations)
+        if best_log_score < log_score_proposal:
+            best_log_score = log_score_proposal
+            np.copyto(best_perm, proposal_permutations)
+
+    init_symmetric_key.permute(best_perm)
     new_decode_mapping = init_symmetric_key.get_decode_mapping()
 
-    decoding_res = MCMCDecoding(log_prev_score, "".join(
+    decoding_res = MCMCDecoding(best_log_score, "".join(
         map(lambda x: new_decode_mapping[x], encoded_text)), init_symmetric_key)
 
     return decoding_res
