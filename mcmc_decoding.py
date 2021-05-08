@@ -1,13 +1,15 @@
 import random
-from typing import Tuple
 import math
-import copy
+from collections import namedtuple
+import warnings
 
 import numpy as np
 from tqdm import notebook
 
 from language_model import NGramStat, count_ngram
 from utils import LetterPermutation
+
+MCMCDecoding = namedtuple("MCMCDecoding", ["log_score", "decoded_text", "permutation"])
 
 
 def log_score_function(encoded_text: str, ngram_stat: NGramStat, mapping: dict):
@@ -24,13 +26,17 @@ def log_score_function(encoded_text: str, ngram_stat: NGramStat, mapping: dict):
 
 
 def mcmc_decryption(encoded_text: str, src_ngram_stat: NGramStat, src_vocab: list, chiper_vocab: list,
-                    true_symmetric_key: LetterPermutation,
-                    num_iters: int, scaling: float = 1) -> Tuple[str, LetterPermutation]:
+                    num_iters: int, scaling: float = 1, generator: random.Random = None) -> MCMCDecoding:
+
+    if generator is None:
+        internal_generator = random.Random(22)
+        warnings.warn("Internal random generator with fixed seed will be used. Results will be all same. \
+                      Please specify cutsom generator")
+    else:
+        internal_generator = generator
 
     init_symmetric_key = LetterPermutation(set(src_vocab), set(chiper_vocab))
     prev_permutations = np.arange(len(init_symmetric_key))
-
-    assert init_symmetric_key.get_encode_mapping() != true_symmetric_key.get_encode_mapping(), "Init key is same"
 
     proposal_permutations = prev_permutations.copy()
 
@@ -41,9 +47,9 @@ def mcmc_decryption(encoded_text: str, src_ngram_stat: NGramStat, src_vocab: lis
     progress = notebook.trange(num_iters, leave=True)
 
     for iter in progress:
-        progress.set_description(f"Log score: {log_prev_score:.2}")
-        index1 = random.randint(0, len(prev_permutations) - 1)
-        index2 = random.randint(0, len(prev_permutations) - 1)
+        progress.set_postfix_str(f"Log score: {log_prev_score:.2}")
+        index1 = internal_generator.randint(0, len(prev_permutations) - 1)
+        index2 = internal_generator.randint(0, len(prev_permutations) - 1)
         np.copyto(proposal_permutations, prev_permutations)
         proposal_permutations[index1], proposal_permutations[index2] = proposal_permutations[index2], proposal_permutations[index1]
 
@@ -51,7 +57,7 @@ def mcmc_decryption(encoded_text: str, src_ngram_stat: NGramStat, src_vocab: lis
 
         log_score_proposal = log_score_function(encoded_text, src_ngram_stat, new_decode_mapping)
 
-        log_rand_var = math.log(max(1e-8, random.random()))
+        log_rand_var = math.log(max(1e-8, internal_generator.random()))
 
         # accept new proposal
         if log_rand_var < scaling * (log_score_proposal - log_prev_score):
@@ -61,4 +67,7 @@ def mcmc_decryption(encoded_text: str, src_ngram_stat: NGramStat, src_vocab: lis
     init_symmetric_key.permute(prev_permutations)
     new_decode_mapping = init_symmetric_key.get_decode_mapping()
 
-    return "".join(map(lambda x: new_decode_mapping[x], encoded_text)), init_symmetric_key
+    decoding_res = MCMCDecoding(log_prev_score, "".join(
+        map(lambda x: new_decode_mapping[x], encoded_text)), init_symmetric_key)
+
+    return decoding_res

@@ -6,7 +6,7 @@ import networkx as nx
 from tqdm import notebook
 
 from language_model import NGramStat, count_ngram
-from utils import get_emoji_vocab, preprocess_text, LetterPermutation
+from utils import preprocess_text, LetterPermutation
 
 BeamSearchHyphotesis = namedtuple("BeamSearchHyphotesis", ["phrase", "log_likelihood"])
 

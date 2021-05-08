@@ -1,24 +1,19 @@
-import enum
-import re
 import zipfile
 from unicodedata import normalize
-from typing import Iterable, List, Sequence
+from typing import List, Sequence
 import string
-import random
 
 import emojis
-from networkx.classes.function import non_edges
 
 from constants import RUSSIAN_LETTERS
 
 
 class LetterPermutation:
-    def __init__(self, src_vocab: set, chiper_vocab: set, seed: int = 32):
+    def __init__(self, src_vocab: frozenset, chiper_vocab: frozenset):
         self._src_vocab = sorted(src_vocab)
         self._chiper_vocab = sorted(chiper_vocab)
-        self._generator = random.Random(seed)
         assert len(self._src_vocab) == len(
-            self._chiper_vocab), f"Number of letters muts be same. But {len(self._src_vocab)} != {len(self._chiper_vocab)}"
+            self._chiper_vocab), f"Number of characters must be same. But {len(self._src_vocab)} != {len(self._chiper_vocab)}"
 
     def get_decode_mapping(self, permutations: Sequence[int] = None) -> dict:
         if permutations is None:
@@ -30,7 +25,7 @@ class LetterPermutation:
     def get_encode_mapping(self, permutations: Sequence[int] = None) -> dict:
         return {src_letter: chiper_letter for chiper_letter, src_letter in self.get_decode_mapping(permutations).items()}
 
-    def permute(self, permutations: Iterable[int]):
+    def permute(self, permutations: Sequence[int]):
         assert len(set(permutations)) == len(
             self._chiper_vocab), "Permutation is not a valid by length"
         self._chiper_vocab = [self._chiper_vocab[permutations[i]] for i in range(len(permutations))]
@@ -50,10 +45,10 @@ def read_text(path_to_zip, ignore_files: List[str] = None, encoding: str = "utf-
     if ignore_files is None:
         ignore_files = []
 
-    with zipfile.ZipFile(path_to_zip, "r") as zip:
-        for item in zip.infolist():
+    with zipfile.ZipFile(path_to_zip, "r") as zip_file:
+        for item in zip_file.infolist():
             if not item.is_dir() and item.filename not in ignore_files:
-                with zip.open(item, "r") as file:
+                with zip_file.open(item, "r") as file:
                     text = file.read().decode(encoding)
                     texts[item.filename] = text
     return texts
