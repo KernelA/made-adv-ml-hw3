@@ -21,7 +21,8 @@
 Создать новое окружение для Anaconda:
 ```
 conda env create -n env_name python=3.8 pip -y
-conda env update -n env_name --file ./requirements.txt
+conda activate env_name
+pip install -r ./requirements.txt
 ```
 
 Если исходных данных нет в директории `data`, то выполнить команду:
