@@ -1,6 +1,6 @@
 # Третье ДЗ по курсу продвинутое машинное обучение
 
-[Описание задания](https://docs.google.com/document/d/1FWCuz-3Q_85yQYEwz6xVkIuXUjQn60dVFxreJId-liM/edit)
+[Описание задания](/task.pdf)
 
 [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/KernelA/made-adv-ml-hw3/blob/master/decrypt.ipynb)
 
@@ -21,7 +21,7 @@
 Создать новое окружение для Anaconda:
 ```
 conda env create -n env_name python=3.8 pip -y
-conda env update -n env_name --file ./requirements.txt
+pip install -r ./requirements.txt
 ```
 
 Если исходных данных нет в директории `data`, то выполнить команду:
